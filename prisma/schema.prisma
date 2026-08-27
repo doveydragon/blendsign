@@ -8,59 +8,77 @@ datasource db {
 }
 
 model Org {
-  id               String            @id @default(cuid())
-  name             String
-  street           String?
-  city             String?
-  province         String?
-  country          String            @default("South Africa")
-  postalCode       String?
-  email            String?
-  timezone         String            @default("Africa/Johannesburg")
-  customDomain     String?
-  legalDisclosure  String?
-  logoUrl          String?
-  logoKey          String?
-  primaryColour    String            @default("#191919")
-  accentColour     String            @default("#229D6C")
-  emailFromName    String?
-  emailFromAddress String?
+  id                    String            @id @default(cuid())
+  name                  String
+  street                String?
+  city                  String?
+  province              String?
+  country               String            @default("South Africa")
+  postalCode            String?
+  email                 String?
+  timezone              String            @default("Africa/Johannesburg")
+  customDomain          String?
+  legalDisclosure       String?
+  logoUrl               String?
+  logoKey               String?
+  primaryColour         String            @default("#191919")
+  accentColour          String            @default("#229D6C")
+  emailFromName         String?
+  emailFromAddress      String?
   authorisedSignerName  String?
   authorisedSignerTitle String?
   signatureKey          String?
   initialsKey           String?
   autoSignEnabled       Boolean           @default(false)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @default(now()) @updatedAt
-  defaultUsers     User[]            @relation("DefaultOrg")
-  memberships      OrgMembership[]
-  envelopes        Envelope[]
-  contacts         Contact[]
-  apiKeys          ApiKey[]
-  webhooks         WebhookEndpoint[]
-  templates        Template[]
-  signForms        SignForm[]
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @default(now()) @updatedAt
+  defaultUsers          User[]            @relation("DefaultOrg")
+  memberships           OrgMembership[]
+  envelopes             Envelope[]
+  contacts              Contact[]
+  apiKeys               ApiKey[]
+  webhooks              WebhookEndpoint[]
+  templates             Template[]
+  signForms             SignForm[]
 }
 
 model User {
-  id           String          @id @default(cuid())
-  org          Org?            @relation("DefaultOrg", fields: [orgId], references: [id])
-  orgId        String?
-  email        String          @unique
-  name         String
-  passwordHash String?
-  firstName    String?
-  lastName     String?
-  company      String?
-  jobTitle     String?
-  dateFormat   String          @default("dd MMM yyyy, HH:mm")
-  timezone     String          @default("Africa/Johannesburg")
-  role         String          @default("member") // owner | admin | member
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @default(now()) @updatedAt
-  envelopes    Envelope[]
-  memberships  OrgMembership[]
-  templates    Template[]
+  id                              String               @id @default(cuid())
+  org                             Org?                 @relation("DefaultOrg", fields: [orgId], references: [id])
+  orgId                           String?
+  email                           String               @unique
+  name                            String
+  passwordHash                    String?
+  authVersion                     Int                  @default(0)
+  twoFactorEnabled                Boolean              @default(false)
+  twoFactorSecretEncrypted        String?
+  twoFactorPendingSecretEncrypted String?
+  twoFactorRecoveryCodeHashes     String[]             @default([])
+  firstName                       String?
+  lastName                        String?
+  company                         String?
+  jobTitle                        String?
+  dateFormat                      String               @default("dd MMM yyyy, HH:mm")
+  timezone                        String               @default("Africa/Johannesburg")
+  role                            String               @default("member") // owner | admin | member
+  createdAt                       DateTime             @default(now())
+  updatedAt                       DateTime             @default(now()) @updatedAt
+  envelopes                       Envelope[]
+  memberships                     OrgMembership[]
+  templates                       Template[]
+  passwordResetTokens             PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, expiresAt])
 }
 
 model OrgMembership {
@@ -206,23 +224,23 @@ enum EnvelopeStatus {
 }
 
 model Envelope {
-  id          String         @id @default(cuid())
-  org         Org            @relation(fields: [orgId], references: [id])
-  orgId       String
-  createdBy   User           @relation(fields: [createdById], references: [id])
-  createdById String
-  title       String
+  id                String         @id @default(cuid())
+  org               Org            @relation(fields: [orgId], references: [id])
+  orgId             String
+  createdBy         User           @relation(fields: [createdById], references: [id])
+  createdById       String
+  title             String
   externalSystem    String?
   externalReference String?
   idempotencyKey    String?
-  status      EnvelopeStatus @default(DRAFT)
-  originalKey String // object storage key for uploaded PDF
-  signedKey   String? // object storage key for final sealed PDF
-  sha256      String? // hash of final signed document
-  expiresAt   DateTime?
-  deletedAt   DateTime?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  status            EnvelopeStatus @default(DRAFT)
+  originalKey       String // object storage key for uploaded PDF
+  signedKey         String? // object storage key for final sealed PDF
+  sha256            String? // hash of final signed document
+  expiresAt         DateTime?
+  deletedAt         DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
   signers     Signer[]
   fields      Field[]

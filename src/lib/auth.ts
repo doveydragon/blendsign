@@ -9,6 +9,12 @@ export type AdminSession = {
   email: string;
   userId: string;
   superAdmin: boolean;
+  authVersion: number;
+  expiresAt: number;
+};
+
+export type TwoFactorChallenge = Omit<AdminSession, "expiresAt"> & {
+  purpose: "two-factor";
   expiresAt: number;
 };
 
@@ -30,7 +36,14 @@ export function createSessionToken(session: Omit<AdminSession, "expiresAt">) {
   return `${encoded}.${signature}`;
 }
 
-export function readSessionToken(token?: string): AdminSession | null {
+function signPayload(payload: object) {
+  if (!sessionSecret()) throw new Error("SESSION_SECRET is not configured");
+  const encoded = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  const signature = createHmac("sha256", sessionSecret()).update(encoded).digest("base64url");
+  return `${encoded}.${signature}`;
+}
+
+function readSignedPayload<T>(token?: string): T | null {
   if (!token || !sessionSecret()) return null;
   const [encoded, signature] = token.split(".");
   if (!encoded || !signature) return null;
@@ -39,11 +52,25 @@ export function readSessionToken(token?: string): AdminSession | null {
   const right = Buffer.from(expected);
   if (left.length !== right.length || !timingSafeEqual(left, right)) return null;
   try {
-    const session = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8")) as AdminSession;
-    return session.expiresAt > Date.now() ? session : null;
+    return JSON.parse(Buffer.from(encoded, "base64url").toString("utf8")) as T;
   } catch {
     return null;
   }
+}
+
+export function createTwoFactorChallenge(challenge: Omit<TwoFactorChallenge, "purpose" | "expiresAt">) {
+  return signPayload({ ...challenge, purpose: "two-factor", expiresAt: Date.now() + 1000 * 60 * 5 });
+}
+
+export function readTwoFactorChallenge(token?: string) {
+  const challenge = readSignedPayload<TwoFactorChallenge>(token);
+  if (!challenge || challenge.purpose !== "two-factor" || challenge.expiresAt <= Date.now()) return null;
+  return challenge;
+}
+
+export function readSessionToken(token?: string): AdminSession | null {
+  const session = readSignedPayload<AdminSession>(token);
+  return session && Number.isInteger(session.authVersion) && session.expiresAt > Date.now() ? session : null;
 }
 
 export function getAdminSession() {

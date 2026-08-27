@@ -3,13 +3,14 @@ import { z } from "zod";
 import { canAdminister, getRequestContext } from "@/lib/account";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, temporaryPassword } from "@/lib/password";
+import { passwordPolicyError } from "@/lib/passwordPolicy";
 
 const userSchema = z.object({
   id: z.string().optional(),
   name: z.string().trim().min(2).max(160),
   email: z.string().email(),
   role: z.enum(["owner", "admin", "member"]),
-  password: z.string().min(10).optional(),
+  password: z.string().max(200).optional(),
 });
 
 export async function GET() {
@@ -21,7 +22,15 @@ export async function GET() {
     include: { user: true },
     orderBy: { user: { name: "asc" } },
   });
-  return NextResponse.json({ users: memberships.map(({ user, role }) => ({ ...user, passwordHash: undefined, role })) });
+  return NextResponse.json({ users: memberships.map(({ user, role }) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role,
+    twoFactorEnabled: user.twoFactorEnabled,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  })) });
 }
 
 export async function POST(request: NextRequest) {
@@ -31,6 +40,8 @@ export async function POST(request: NextRequest) {
   const parsed = userSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: "Enter a valid user name, email, role and password." }, { status: 400 });
   const password = parsed.data.password || temporaryPassword();
+  const policyError = passwordPolicyError(password);
+  if (policyError) return NextResponse.json({ error: policyError }, { status: 400 });
   let passwordToReveal: string | null = null;
   let user = await prisma.user.findUnique({ where: { email: parsed.data.email.toLowerCase() } });
   if (!user) {
@@ -45,7 +56,7 @@ export async function POST(request: NextRequest) {
     });
     passwordToReveal = password;
   } else if (parsed.data.password) {
-    user = await prisma.user.update({ where: { id: user.id }, data: { name: parsed.data.name, passwordHash: hashPassword(parsed.data.password) } });
+    user = await prisma.user.update({ where: { id: user.id }, data: { name: parsed.data.name, passwordHash: hashPassword(parsed.data.password), authVersion: { increment: 1 } } });
     passwordToReveal = parsed.data.password;
   }
   await prisma.orgMembership.upsert({
@@ -62,10 +73,14 @@ export async function PATCH(request: NextRequest) {
   if (!canAdminister(context)) return NextResponse.json({ error: "Administrator access is required." }, { status: 403 });
   const parsed = userSchema.safeParse(await request.json());
   if (!parsed.success || !parsed.data.id) return NextResponse.json({ error: "User is invalid." }, { status: 400 });
+  if (parsed.data.password) {
+    const policyError = passwordPolicyError(parsed.data.password);
+    if (policyError) return NextResponse.json({ error: policyError }, { status: 400 });
+  }
   const membership = await prisma.orgMembership.findUnique({ where: { orgId_userId: { orgId: context.org.id, userId: parsed.data.id } } });
   if (!membership) return NextResponse.json({ error: "User not found." }, { status: 404 });
   await prisma.$transaction([
-    prisma.user.update({ where: { id: parsed.data.id }, data: { name: parsed.data.name, ...(parsed.data.password ? { passwordHash: hashPassword(parsed.data.password) } : {}) } }),
+    prisma.user.update({ where: { id: parsed.data.id }, data: { name: parsed.data.name, ...(parsed.data.password ? { passwordHash: hashPassword(parsed.data.password), authVersion: { increment: 1 } } : {}) } }),
     prisma.orgMembership.update({ where: { orgId_userId: { orgId: context.org.id, userId: parsed.data.id } }, data: { role: parsed.data.role } }),
   ]);
   return NextResponse.json({ ok: true });

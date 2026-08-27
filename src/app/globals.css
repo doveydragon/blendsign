@@ -301,6 +301,10 @@ button { color: inherit; }
 .button--outline { border-color: #bdb9b0; background: #fff; color: var(--ink); }
 .button--outline:hover { border-color: var(--ink); }
 .button--quiet { border-color: var(--line); background: #fff; }
+.button--secondary { border-color: #bdb9b0; background: #fff; color: var(--ink); }
+.button--secondary:hover { border-color: var(--ink); }
+.button--danger { border-color: #d8b3b3; background: #fff; color: var(--danger); }
+.button--danger:hover { border-color: var(--danger); background: #f9eeee; }
 .button--full { width: 100%; }
 
 .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 4px 18px rgba(7,24,57,.035); }
@@ -491,6 +495,7 @@ a.stat-card:hover { border-color: #bbb6ad; }
 .workflow-summary dd { margin: 0; font-weight: 700; }
 .summary-note { display: block; margin-top: 13px; color: #89867f; font-size: 9px; line-height: 1.45; text-align: center; }
 .form-error { margin-bottom: 14px; padding: 10px; border-radius: 4px; background: #f7e8e7; color: #8f4040; font-size: 11px; }
+.form-success { margin-bottom: 14px; padding: 10px; border-radius: 4px; background: #e3f3e9; color: #316c4c; font-size: 11px; }
 
 .app-loading { min-height: 100vh; display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--stone); }
 
@@ -510,6 +515,12 @@ a.stat-card:hover { border-color: #bbb6ad; }
 .login-card-logo { width: fit-content; margin-bottom: 28px; }
 .login-card h2 { margin: 7px 0 8px; font-size: 29px; letter-spacing: -.035em; }
 .login-card > div > p:last-child { margin: 0; color: var(--muted); font-size: 13px; }
+.login-page--single { grid-template-columns: 1fr; }
+.auth-link { width: fit-content; color: var(--brand-accent-dark); font-size: 11px; font-weight: 700; }
+.auth-link:hover { text-decoration: underline; }
+.auth-link--right { justify-self: end; margin-top: -12px; }
+.auth-link--button { justify-self: center; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.auth-code-input { max-width: 230px; letter-spacing: .18em; font-family: "Geist Mono", monospace; font-size: 17px; }
 
 .settings-layout { min-height: calc(100vh - 72px); display: grid; grid-template-columns: 260px minmax(0, 1fr); }
 .settings-nav { position: sticky; top: 72px; height: calc(100vh - 72px); padding: 34px 20px; background: #e7e7e7; border-right: 1px solid #d5d5d5; }
@@ -545,6 +556,20 @@ a.stat-card:hover { border-color: #bbb6ad; }
 .notice-banner { margin-bottom: 20px; padding: 13px 16px; border-left: 3px solid var(--brand-accent); background: var(--brand-accent-soft); color: var(--brand-accent-dark); font-size: 12px; }
 .check-label { display: flex; align-items: center; gap: 8px; color: #514e48; font-size: 12px; }
 .check-label input { accent-color: var(--brand-accent-dark); }
+.security-panel { display: grid; gap: 22px; margin-bottom: 18px; padding: 30px; }
+.security-panel h3 { margin: 0 0 7px; font-size: 17px; }
+.security-panel p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.security-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.security-status { padding: 6px 10px; border-radius: 999px; background: #eeeae3; color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.security-status.is-enabled { background: var(--brand-accent-soft); color: var(--brand-accent-dark); }
+.two-factor-setup, .security-actions, .recovery-codes { display: grid; gap: 18px; padding-top: 22px; border-top: 1px solid var(--line); }
+.two-factor-qr { width: 240px; height: 240px; border: 1px solid var(--line); border-radius: 10px; }
+.two-factor-setup details { color: var(--muted); font-size: 11px; }
+.two-factor-setup summary { color: var(--brand-accent-dark); font-weight: 700; cursor: pointer; }
+.two-factor-secret { display: block; width: fit-content; margin-top: 8px; padding: 9px 11px; border-radius: 6px; background: #f2f0eb; color: var(--ink); letter-spacing: .08em; }
+.recovery-codes { padding: 22px; border: 1px solid #e2c178; border-radius: 10px; background: #fff9e9; }
+.recovery-code-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 160px)); gap: 8px; }
+.recovery-code-grid code { padding: 9px 11px; border-radius: 5px; background: #fff; color: var(--ink); font-size: 13px; letter-spacing: .08em; text-align: center; }
 
 .entity-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 17px; }
 .entity-card { display: grid; grid-template-columns: 90px minmax(0, 1fr); align-items: center; gap: 20px; min-height: 190px; padding: 24px; }

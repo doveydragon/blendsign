@@ -42,6 +42,7 @@ const nav: NavItem[] = [
     icon: "settings",
     drawer: [
       { heading: "General", label: "My profile", href: "/settings/profile" },
+      { label: "Password and security", href: "/settings/security" },
       { label: "Integrations", href: "/settings/integrations" },
       { label: "Contacts", href: "/settings/contacts" },
       { label: "Trash", href: "/settings/trash" },
@@ -58,7 +59,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [drawer, setDrawer] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [account, setAccount] = useState<{ user: { name: string }; entity: { id: string; name: string; logoKey?: string | null; logoUrl?: string | null; updatedAt?: string }; entities: { id: string; name: string; logoKey?: string | null; logoUrl?: string | null; updatedAt?: string }[] } | null>(null);
-  const publicPage = pathname === "/login" || pathname.startsWith("/sign/") || pathname.startsWith("/form/");
+  const publicPage = pathname === "/login" || pathname === "/forgot-password" || pathname === "/reset-password" || pathname.startsWith("/sign/") || pathname.startsWith("/form/");
 
   useEffect(() => {
     setDrawer(null);

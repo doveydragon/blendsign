@@ -7,6 +7,7 @@ import { Icon, IconName } from "@/components/Icon";
 const groups: { title: string; items: { label: string; href: string; icon: IconName }[] }[] = [
   { title: "Your account", items: [
     { label: "My profile", href: "/settings/profile", icon: "users" },
+    { label: "Password and security", href: "/settings/security", icon: "shield" },
     { label: "Contacts", href: "/settings/contacts", icon: "documents" },
     { label: "Trash", href: "/settings/trash", icon: "file" },
   ] },

@@ -36,6 +36,8 @@ export async function getRequestContext() {
   const session = getAdminSession();
   if (!session) return null;
   const bootstrap = await ensureDefaultAccount();
+  const user = await prisma.user.findUnique({ where: { id: session.userId } });
+  if (!user || user.authVersion !== session.authVersion) return null;
   const selectedId = cookies().get(ENTITY_COOKIE)?.value;
   let org = selectedId ? await prisma.org.findUnique({ where: { id: selectedId } }) : null;
   let membership = org ? await prisma.orgMembership.findUnique({
@@ -59,7 +61,6 @@ export async function getRequestContext() {
       where: { orgId_userId: { orgId: org.id, userId: session.userId } },
     });
   }
-  const user = await prisma.user.findUnique({ where: { id: session.userId } }) || bootstrap.user;
   return { session, org, user, role: session.superAdmin ? "owner" : membership?.role || "member" };
 }
 

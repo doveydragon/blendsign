@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request: NextRequest) {
   const session = getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+  const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { authVersion: true } });
+  if (!user || user.authVersion !== session.authVersion) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   const parsed = z.object({ entityId: z.string().min(1) }).safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: "Entity is required." }, { status: 400 });
   const entity = await prisma.org.findUnique({ where: { id: parsed.data.entityId } });

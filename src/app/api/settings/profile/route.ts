@@ -15,7 +15,8 @@ const profileSchema = z.object({
 export async function GET() {
   const context = await getRequestContext();
   if (!context) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
-  return NextResponse.json({ profile: context.user });
+  const { name, email, firstName, lastName, company, jobTitle, dateFormat, timezone } = context.user;
+  return NextResponse.json({ profile: { name, email, firstName, lastName, company, jobTitle, dateFormat, timezone } });
 }
 
 export async function PATCH(request: NextRequest) {

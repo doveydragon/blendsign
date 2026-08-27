@@ -56,6 +56,21 @@ users, roles, API keys, webhook endpoints, organisation details, colours,
 logo, legal disclosure and custom-domain setting. Use the company switcher
 in the top bar before creating or managing documents.
 
+### Password recovery and two-factor authentication
+
+BlendSign sends single-use password-reset links through the configured SMTP
+account. Reset tokens are stored only as SHA-256 hashes, expire after 30
+minutes, and changing a password invalidates existing sessions. For the
+bootstrap `ADMIN_EMAIL`, the first successful reset replaces the environment
+password with the account's database password hash.
+
+Users can enable time-based one-time-password authentication under
+**Settings > Password and security** with any standard authenticator app.
+The TOTP secret is encrypted at rest with `SESSION_SECRET`. Recovery codes are
+shown once and stored only as hashes. Keep `SESSION_SECRET` stable and backed
+up securely, because rotating it invalidates sessions and makes enrolled TOTP
+secrets unreadable.
+
 ## API and webhooks
 
 Create a company-scoped key under **Settings > Integrations and API**. The
