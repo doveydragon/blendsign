@@ -58,8 +58,8 @@ export function authenticatorUri(email: string, secret: string) {
 
 export function generateRecoveryCodes(count = 10) {
   return Array.from({ length: count }, () => {
-    const raw = base32Encode(randomBytes(5)).slice(0, 8);
-    return `${raw.slice(0, 4)}-${raw.slice(4)}`;
+    const raw = base32Encode(randomBytes(8)).slice(0, 12);
+    return `${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8)}`;
   });
 }
 
@@ -70,4 +70,3 @@ export function normaliseRecoveryCode(code: string) {
 export function hashRecoveryCode(code: string) {
   return sha256(normaliseRecoveryCode(code));
 }
-
